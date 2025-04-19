@@ -1,15 +1,15 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { AuthRequest } from '../middlewares/auth';
+import { JwtPayload } from '../middlewares/auth';
 
 const prisma = new PrismaClient();
 
-export const createCertificate = async (req: AuthRequest, res: Response) => {
+export const createCertificate = async (req: Request, res: Response) => {
   try {
     const { name, issuingOrg, issueDate, expiryDate, credentialId, credentialUrl } = req.body;
-    const userId = req.user?.userId;
+    const user = (req as any).user as JwtPayload;
 
-    if (!userId) {
+    if (!user?.userId) {
       return res.status(401).json({ message: 'User not authenticated' });
     }
 
@@ -21,7 +21,7 @@ export const createCertificate = async (req: AuthRequest, res: Response) => {
         expiryDate: expiryDate ? new Date(expiryDate) : null,
         credentialId,
         credentialUrl,
-        userId
+        userId: user.userId
       }
     });
 
@@ -31,7 +31,7 @@ export const createCertificate = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const getCertificates = async (req: AuthRequest, res: Response) => {
+export const getCertificates = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const certificates = await prisma.certificate.findMany({
@@ -45,7 +45,7 @@ export const getCertificates = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const getCertificate = async (req: AuthRequest, res: Response) => {
+export const getCertificate = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const certificate = await prisma.certificate.findUnique({
@@ -62,7 +62,7 @@ export const getCertificate = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const updateCertificate = async (req: AuthRequest, res: Response) => {
+export const updateCertificate = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { name, issuingOrg, issueDate, expiryDate, credentialId, credentialUrl } = req.body;
@@ -85,7 +85,7 @@ export const updateCertificate = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const deleteCertificate = async (req: AuthRequest, res: Response) => {
+export const deleteCertificate = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     await prisma.certificate.delete({

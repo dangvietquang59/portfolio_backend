@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { JwtPayload } from '../middlewares/auth';
 
 const prisma = new PrismaClient();
 
@@ -63,6 +64,47 @@ export const createUser = async (req: Request, res: Response) => {
     });
   } catch (error) {
     res.status(500).json({ message: 'Error creating user', error });
+  }
+};
+
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName
+      },
+      token
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error logging in', error });
   }
 };
 
@@ -184,46 +226,5 @@ export const updateUserProfile = async (req: Request, res: Response) => {
     res.json(profile);
   } catch (error) {
     res.status(500).json({ message: 'Error updating profile', error });
-  }
-};
-
-export const login = async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
-
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email }
-    });
-
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    // Verify password
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '24h' }
-    );
-
-    res.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName
-      },
-      token
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Error logging in', error });
   }
 }; 

@@ -1,15 +1,15 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { AuthRequest } from '../middlewares/auth';
+import { JwtPayload } from '../middlewares/auth';
 
 const prisma = new PrismaClient();
 
-export const createExperience = async (req: AuthRequest, res: Response) => {
+export const createExperience = async (req: Request, res: Response) => {
   try {
     const { title, company, location, startDate, endDate, current, description } = req.body;
-    const userId = req.user?.userId;
+    const user = (req as any).user as JwtPayload;
 
-    if (!userId) {
+    if (!user?.userId) {
       return res.status(401).json({ message: 'User not authenticated' });
     }
 
@@ -22,7 +22,7 @@ export const createExperience = async (req: AuthRequest, res: Response) => {
         endDate: endDate ? new Date(endDate) : null,
         current,
         description,
-        userId
+        userId: user.userId
       }
     });
 
@@ -32,7 +32,7 @@ export const createExperience = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const getExperiences = async (req: AuthRequest, res: Response) => {
+export const getExperiences = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const experiences = await prisma.experience.findMany({
@@ -46,7 +46,7 @@ export const getExperiences = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const getExperience = async (req: AuthRequest, res: Response) => {
+export const getExperience = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const experience = await prisma.experience.findUnique({
@@ -63,7 +63,7 @@ export const getExperience = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const updateExperience = async (req: AuthRequest, res: Response) => {
+export const updateExperience = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { title, company, location, startDate, endDate, current, description } = req.body;
@@ -87,7 +87,7 @@ export const updateExperience = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const deleteExperience = async (req: AuthRequest, res: Response) => {
+export const deleteExperience = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     await prisma.experience.delete({

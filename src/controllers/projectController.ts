@@ -1,15 +1,15 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { AuthRequest } from '../middlewares/auth';
+import { JwtPayload } from '../middlewares/auth';
 
 const prisma = new PrismaClient();
 
-export const createProject = async (req: AuthRequest, res: Response) => {
+export const createProject = async (req: Request, res: Response) => {
   try {
     const { title, description, startDate, endDate, current, url, githubUrl, images, skills } = req.body;
-    const userId = req.user?.userId;
+    const user = (req as any).user as JwtPayload;
 
-    if (!userId) {
+    if (!user?.userId) {
       return res.status(401).json({ message: 'User not authenticated' });
     }
 
@@ -23,7 +23,7 @@ export const createProject = async (req: AuthRequest, res: Response) => {
         url,
         githubUrl,
         images,
-        userId,
+        userId: user.userId,
         skills: {
           connect: skills?.map((skillId: string) => ({ id: skillId })) || []
         }
@@ -39,7 +39,7 @@ export const createProject = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const getProjects = async (req: AuthRequest, res: Response) => {
+export const getProjects = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const projects = await prisma.project.findMany({
@@ -56,7 +56,7 @@ export const getProjects = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const getProject = async (req: AuthRequest, res: Response) => {
+export const getProject = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const project = await prisma.project.findUnique({
@@ -76,7 +76,7 @@ export const getProject = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const updateProject = async (req: AuthRequest, res: Response) => {
+export const updateProject = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { title, description, startDate, endDate, current, url, githubUrl, images, skills } = req.body;
@@ -107,7 +107,7 @@ export const updateProject = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const deleteProject = async (req: AuthRequest, res: Response) => {
+export const deleteProject = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     await prisma.project.delete({
