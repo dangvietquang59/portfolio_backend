@@ -10,10 +10,10 @@ import { authenticateToken } from '../middlewares/auth';
 
 const router = express.Router();
 
-router.post('/', authenticateToken, createSkill);
-router.get('/user/:userId', authenticateToken, getSkills);
-router.get('/:id', authenticateToken, getSkill);
-router.put('/:id', authenticateToken, updateSkill);
-router.delete('/:id', authenticateToken, deleteSkill);
+router.post('/', authenticateToken, createSkill as express.RequestHandler);
+router.get('/user/:userId', authenticateToken, getSkills as express.RequestHandler);
+router.get('/:id', authenticateToken, getSkill as express.RequestHandler);
+router.put('/:id', authenticateToken, updateSkill as express.RequestHandler);
+router.delete('/:id', authenticateToken, deleteSkill as express.RequestHandler);
 
 export default router; 
