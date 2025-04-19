@@ -1,12 +1,17 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { AuthRequest } from '../middlewares/auth';
 
 const prisma = new PrismaClient();
 
-export const createSocialLink = async (req: Request, res: Response) => {
+export const createSocialLink = async (req: AuthRequest, res: Response) => {
   try {
     const { platform, url } = req.body;
-    const userId = req.user.userId;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
 
     const socialLink = await prisma.socialLink.create({
       data: {
@@ -22,11 +27,12 @@ export const createSocialLink = async (req: Request, res: Response) => {
   }
 };
 
-export const getSocialLinks = async (req: Request, res: Response) => {
+export const getSocialLinks = async (req: AuthRequest, res: Response) => {
   try {
     const { userId } = req.params;
     const socialLinks = await prisma.socialLink.findMany({
-      where: { userId }
+      where: { userId },
+      orderBy: { platform: 'asc' }
     });
 
     res.json(socialLinks);
@@ -35,7 +41,7 @@ export const getSocialLinks = async (req: Request, res: Response) => {
   }
 };
 
-export const getSocialLink = async (req: Request, res: Response) => {
+export const getSocialLink = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const socialLink = await prisma.socialLink.findUnique({
@@ -52,7 +58,7 @@ export const getSocialLink = async (req: Request, res: Response) => {
   }
 };
 
-export const updateSocialLink = async (req: Request, res: Response) => {
+export const updateSocialLink = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { platform, url } = req.body;
@@ -71,7 +77,7 @@ export const updateSocialLink = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteSocialLink = async (req: Request, res: Response) => {
+export const deleteSocialLink = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     await prisma.socialLink.delete({

@@ -1,12 +1,17 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { AuthRequest } from '../middlewares/auth';
 
 const prisma = new PrismaClient();
 
-export const createSkill = async (req: Request, res: Response) => {
+export const createSkill = async (req: AuthRequest, res: Response) => {
   try {
     const { name, level, category } = req.body;
-    const userId = req.user.userId;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
 
     const skill = await prisma.skill.create({
       data: {
@@ -23,7 +28,7 @@ export const createSkill = async (req: Request, res: Response) => {
   }
 };
 
-export const getSkills = async (req: Request, res: Response) => {
+export const getSkills = async (req: AuthRequest, res: Response) => {
   try {
     const { userId } = req.params;
     const skills = await prisma.skill.findMany({
@@ -37,7 +42,7 @@ export const getSkills = async (req: Request, res: Response) => {
   }
 };
 
-export const getSkill = async (req: Request, res: Response) => {
+export const getSkill = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const skill = await prisma.skill.findUnique({
@@ -54,7 +59,7 @@ export const getSkill = async (req: Request, res: Response) => {
   }
 };
 
-export const updateSkill = async (req: Request, res: Response) => {
+export const updateSkill = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { name, level, category } = req.body;
@@ -74,7 +79,7 @@ export const updateSkill = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteSkill = async (req: Request, res: Response) => {
+export const deleteSkill = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     await prisma.skill.delete({

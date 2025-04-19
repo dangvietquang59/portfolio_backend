@@ -1,12 +1,17 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { AuthRequest } from '../middlewares/auth';
 
 const prisma = new PrismaClient();
 
-export const createEducation = async (req: Request, res: Response) => {
+export const createEducation = async (req: AuthRequest, res: Response) => {
   try {
     const { school, degree, fieldOfStudy, startDate, endDate, grade, activities, description } = req.body;
-    const userId = req.user.userId;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
 
     const education = await prisma.education.create({
       data: {
@@ -28,7 +33,7 @@ export const createEducation = async (req: Request, res: Response) => {
   }
 };
 
-export const getEducations = async (req: Request, res: Response) => {
+export const getEducations = async (req: AuthRequest, res: Response) => {
   try {
     const { userId } = req.params;
     const educations = await prisma.education.findMany({
@@ -42,7 +47,7 @@ export const getEducations = async (req: Request, res: Response) => {
   }
 };
 
-export const getEducation = async (req: Request, res: Response) => {
+export const getEducation = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const education = await prisma.education.findUnique({
@@ -59,7 +64,7 @@ export const getEducation = async (req: Request, res: Response) => {
   }
 };
 
-export const updateEducation = async (req: Request, res: Response) => {
+export const updateEducation = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { school, degree, fieldOfStudy, startDate, endDate, grade, activities, description } = req.body;
@@ -84,7 +89,7 @@ export const updateEducation = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteEducation = async (req: Request, res: Response) => {
+export const deleteEducation = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     await prisma.education.delete({
