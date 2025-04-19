@@ -8,9 +8,124 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String         @id @default(uuid())
+  email         String         @unique
+  username      String         @unique
+  password      String
+  firstName     String
+  lastName      String
+  avatar        String?
+  bio           String?       @db.Text
+  phoneNumber   String?
+  location      String?
+  website       String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  // Relations
+  profile       Profile?
+  experiences   Experience[]
+  education     Education[]
+  projects      Project[]
+  skills        Skill[]
+  certificates  Certificate[]
+  socialLinks   SocialLink[]
+}
+
+model Profile {
+  id              String    @id @default(uuid())
+  headline        String?   @db.Text
+  summary         String?   @db.Text
+  industry        String?
+  yearsOfExp      Int?
+  openToWork      Boolean   @default(true)
+  currentPosition String?
+  
+  // Relations
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Experience {
+  id              String    @id @default(uuid())
+  title           String
+  company         String
+  location        String?
+  startDate       DateTime
+  endDate         DateTime?
+  current         Boolean   @default(false)
+  description     String?   @db.Text
+  
+  // Relations
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Education {
+  id              String    @id @default(uuid())
+  school          String
+  degree          String
+  fieldOfStudy    String
+  startDate       DateTime
+  endDate         DateTime?
+  grade           String?
+  activities      String?   @db.Text
+  description     String?   @db.Text
+  
+  // Relations
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id              String    @id @default(uuid())
+  title           String
+  description     String    @db.Text
+  startDate       DateTime
+  endDate         DateTime?
+  current         Boolean   @default(false)
+  url             String?
+  githubUrl       String?
+  images          String[]
+  
+  // Relations
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skills          Skill[]
+}
+
+model Skill {
+  id              String    @id @default(uuid())
+  name            String
+  level           Int       // 1-5
+  category        String    // Technical, Soft Skills, Languages, etc.
+  
+  // Relations
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects        Project[]
+}
+
+model Certificate {
+  id              String    @id @default(uuid())
+  name            String
+  issuingOrg      String
+  issueDate       DateTime
+  expiryDate      DateTime?
+  credentialId    String?
+  credentialUrl   String?
+  
+  // Relations
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SocialLink {
+  id              String    @id @default(uuid())
+  platform        String    // LinkedIn, GitHub, Twitter, etc.
+  url             String
+  
+  // Relations
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 } 
