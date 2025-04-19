@@ -12,16 +12,14 @@ import { authenticateToken } from '../middlewares/auth';
 
 const router = express.Router();
 
-// Auth routes
+// Public routes (no authentication required)
 router.post('/register', createUser);
 router.post('/login', login);
 
-// User routes
+// Protected routes (authentication required)
 router.get('/:id', authenticateToken, getUser);
 router.put('/:id', authenticateToken, updateUser);
 router.delete('/:id', authenticateToken, deleteUser);
-
-// Profile routes
 router.get('/:id/profile', authenticateToken, getUserProfile);
 router.put('/:id/profile', authenticateToken, updateUserProfile);
 

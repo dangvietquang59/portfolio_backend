@@ -16,6 +16,7 @@ COPY . .
 # Tạo Prisma Client
 RUN npx prisma generate
 
+RUN npx prisma generate --no-engine
 # Build TypeScript ra thư mục dist/
 RUN npm run build
 
