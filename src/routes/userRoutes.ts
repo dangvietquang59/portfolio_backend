@@ -17,7 +17,7 @@ router.post('/register', createUser);
 router.post('/login', login);
 
 // Protected routes (authentication required)
-router.get('/:id', authenticateToken, getUser);
+router.get('/:username', getUser);
 router.put('/:id', authenticateToken, updateUser);
 router.delete('/:id', authenticateToken, deleteUser);
 router.get('/:id/profile', authenticateToken, getUserProfile);

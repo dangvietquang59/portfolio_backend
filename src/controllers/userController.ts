@@ -109,9 +109,9 @@ export const login = async (req: Request, res: Response) => {
 
 export const getUser = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { username } = req.params;
     const user = await prisma.user.findUnique({
-      where: { id },
+      where: { username },
       select: {
         id: true,
         email: true,
